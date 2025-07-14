@@ -121,7 +121,7 @@ func handleAlert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if env == "" {
-		env = "开发盛鼎云"
+		env = "测试"
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
