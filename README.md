@@ -14,6 +14,11 @@ k8s-network-probe网络探测,用于探测k8s内各项服务指标是否正常�
 
 
 ### 项目架构
-
+![img.png](img.png)
 
 ### 展示
+（1）prometheus-target
+![img_1.png](img_1.png)
+（2）grafana
+![img_2.png](img_2.png)
+![img_3.png](img_3.png)
