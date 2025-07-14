@@ -1,0 +1,35 @@
+{{ define "wechat.default.message" }}
+{{- if gt (len .Alerts.Firing) 0 -}}
+{{- range $index, $alert := .Alerts -}}
+{{- if eq $alert.Status "firing" -}}
+🔥<font color="warning">**【告警通知】**</font>🔥
+**告警程序:** AlertManager
+**告警级别:** {{ $alert.Labels.severity }}
+**告警名称:** {{ $alert.Labels.alertname }}
+**告警状态:** {{ $alert.Status }}
+**告警主机:** {{ $alert.Labels.instance }}
+**告警主题:** {{ $alert.Annotations.summary }}
+**告警详情:** {{ $alert.Annotations.description }}
+**触发时间:** <font color="warning">{{ (.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}</font>
+========= =end= ========
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if gt (len .Alerts.Resolved) 0 -}}
+{{- range $index, $alert := .Alerts -}}
+{{- if eq $alert.Status "resolved" -}}
+✅<font color="info">**【告警恢复】**</font>✅
+**告警程序:** AlertManager
+**告警级别:** {{ $alert.Labels.severity }}
+**告警名称:** {{ $alert.Labels.alertname }}
+**告警状态:** {{ $alert.Status }}
+**告警主机:** {{ $alert.Labels.instance }}
+**告警主题:** {{ $alert.Annotations.summary }}
+**告警详情:** {{ $alert.Annotations.description }}
+**触发时间:** <font color="warning">{{ (.StartsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}</font>
+**恢复时间:** <font color="info">{{ (.EndsAt.Add 28800e9).Format "2006-01-02 15:04:05" }}</font>
+========= =end= ========
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

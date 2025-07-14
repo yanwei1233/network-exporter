@@ -1,0 +1,27 @@
+global:
+  resolve_timeout: 2h
+
+templates:
+  - '/etc/alertmanager/secrets/alertmanager-templates/*.tmpl'
+
+# 新增抑制规则
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: [ 'alertname', 'namespace' ]
+    # 当存在严重告警时，抑制警告级别的重复告警
+    # 避免同一问题的不同级别告警重复通知
+
+route:
+  group_by: [ 'alertname' ]
+  group_wait: 30s
+  group_interval: 1m
+  repeat_interval: 1d # 1天发送一次
+  receiver: "webhook"
+
+receivers:
+  - name: 'webhook'
+    webhook_configs:
+      - url: "http://xxx.xx.xx.xx:5050/alert?token=token&env=测试" #这里写部署webhook的主机ip和token
