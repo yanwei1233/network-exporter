@@ -1,0 +1,11 @@
+[{"dest_addr":"baidu.com","func":"dns","probe_tw":3},
+  {"dest_addr":"192.168.0.100:22","func":"tcp","probe_tw":3},
+  {"dest_addr":"xxxx.wdwdwd","func":"dns","probe_tw":3},
+  {"dest_addr":"https://192.168.0.100:6443","func":"http","probe_tw":3},
+  {"dest_addr":"google.com","func":"dns","probe_tw":3},
+  {"dest_addr":"http://192.168.0.100:20000/tools/static-file/node-env-check-agent_v1.0","func":"http","probe_tw":3},
+  {"dest_addr":"192.168.0.100:6443","func":"tcp","probe_tw":3},
+  {"dest_addr":"github.com","func":"ping","probe_tw":3},
+  {"dest_addr":"192.168.0.200","func":"ping","probe_tw":5},
+  {"dest_addr":"192.168.0.200:6443","func":"tcp","probe_tw":3},
+  {"dest_addr":"192.168.0.101","func":"ping","probe_tw":3}]

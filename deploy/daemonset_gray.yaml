@@ -1,0 +1,121 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: k8s-network-probe-agent
+  namespace: k8s-network-probe
+  labels:
+    app: k8s-network-probe-agent
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
+  selector:
+    matchLabels:
+      app: k8s-network-probe-agent
+  template:
+
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '8088'
+        prometheus.io/scrape: 'true'
+      labels:
+        app: k8s-network-probe-agent
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        k8s-network-probe-agent-gray: need
+      containers:
+        - name: k8s-network-probe-agent
+          image: registry.cn-beijing.aliyuncs.com/ning1875_haiwai_image/k8s-network-probe-agent:v1.0
+          args:
+#            - -server.addr=http://192.168.248.144:30090
+            - -run.type=container
+          resources:
+            requests:
+              cpu: 200m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 200Mi
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/localtime
+
+          ports:
+            - containerPort: 8088
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /etc/localtime
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: k8s-network-probe-agent
+    app.kubernetes.io/name: k8s-network-probe-agent
+  name: k8s-network-probe-agent
+  namespace: k8s-network-probe
+spec:
+  ports:
+    - name: metrics
+      port: 8088
+      targetPort: 8088
+  selector:
+    app: k8s-network-probe-agent
+---
+#serverMonitor,用于prometheus的CRD自动采集
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: k8s-network-probe-agent
+  name: k8s-network-probe-agent
+  namespace: monitoring
+spec:
+  endpoints:
+    - port: http-metrics
+      interval: 30s
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - k8s-network-probe
+  selector:
+    matchLabels:
+      app: k8s-network-probe-agent
+---
+#rbac权限验证
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-k8s-network-agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-k8s-network-agent  # 自定义名称
+  namespace: k8s-network-probe
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s  # Prometheus 使用的 ServiceAccount 名称
+    namespace: monitoring  # Prometheus 所在的命名空间
+roleRef:
+  kind: ClusterRole
+  name: prometheus-k8s-network-agent  # 引用上面创建的 ClusterRole
+  apiGroup: rbac.authorization.k8s.io

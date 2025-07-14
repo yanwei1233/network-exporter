@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-network-probe-server
+  namespace: k8s-network-probe
+  labels:
+    app: k8s-network-probe-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-network-probe-server
+  template:
+    metadata:
+      labels:
+        app: k8s-network-probe-server
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8087'
+        prometheus.io/path: 'metrics'
+    spec:
+      nodeName: k8s-master
+      containers:
+        - name: k8s-network-probe-server
+          image: registry.cn-beijing.aliyuncs.com/ning1875_haiwai_image/k8s-network-probe-server:v1.0
+          imagePullPolicy: Always
+          args:
+            - -store.file.path=/opt/app/k8s-network-probe-server-store.json
+          ports:
+            - containerPort: 8087
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/localtime
+            - name: store-file
+              mountPath: /opt/app/k8s-network-probe-server-store.json
+          securityContext:
+            privileged: true
+      volumes:
+        - name: tz-config
+          hostPath:
+            path: /etc/localtime
+        - name: store-file
+          hostPath:
+            path: /opt/app/k8s-network-probe-server-store.json
+            type: FileOrCreate # 前面目录你得有
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: k8s-network-probe
+  name: k8s-network-probe-server
+  labels:
+    app: k8s-network-probe-server
+    app.kubernetes.io/name: k8s-network-probe-server
+spec:
+  ports:
+    - name: http-metrics
+      protocol: TCP
+      port: 8087
+      targetPort: 8087
+  selector:
+    app: k8s-network-probe-server
+---
+#serverMonitor,用于prometheus的CRD自动采集
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/name: k8s-network-probe-server
+  name: k8s-network-server-exporter
+  namespace: monitoring
+spec:
+  endpoints:
+    - port: http-metrics
+      interval: 30s
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - k8s-network-probe
+  selector:
+    matchLabels:
+      app: k8s-network-probe-server
+---
+#rbac权限验证
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-k8s-network-probe
+rules:
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-k8s-network-probe  # 自定义名称
+  namespace: k8s-network-probe
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s  # Prometheus 使用的 ServiceAccount 名称
+    namespace: monitoring  # Prometheus 所在的命名空间
+roleRef:
+  kind: ClusterRole
+  name: prometheus-k8s-network-probe  # 引用上面创建的 ClusterRole
+  apiGroup: rbac.authorization.k8s.io
