@@ -11,16 +11,33 @@ k8s-network-probe网络探测,用于探测k8s内各项服务指标是否正常�
 4、/webhook/hook_project 程序建议在docker下运行，非k8s环境，能连接外网，目前url是企业微信的webhook，只需传入token即可。运行启动docker-compose up -d
 ### 编译
 ```shell
-
+chmod +x ./bin/build.sh
+./build.sh
 ```
 ### 启动
 ```shell
-
+chmod+x ./bin/build.sh
+./run.sh
 ```
 
 ### 代码结构
-
-
+```api
+├─alertmanager //alertmanager文件
+├─bin          //项目启动文件
+├─cmd          //network-exporter的client和server文件
+│  ├─agent     
+│  └─server
+├─deploy       //network-exporterdockerfile和k8s.yaml文件
+├─grafana      //grafana的json文件
+├─pkg          //network-exporter项目文件
+│  ├─probe     
+│  ├─target-store
+│  ├─utils
+│  └─web-handler
+└─webhook      //webhook告警代码文件
+    ├─bin
+    └─hook_project
+```
 ### 项目架构
 ![img.png](img.png)
 
