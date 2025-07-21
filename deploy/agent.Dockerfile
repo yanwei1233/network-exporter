@@ -1,5 +1,4 @@
-#FROM golang:1.17 as builder
-FROM registry.cn-beijing.aliyuncs.com/ning1875_haiwai_image/golang1.17:1.17 as builder
+FROM golang:1.17 as builder
 WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./

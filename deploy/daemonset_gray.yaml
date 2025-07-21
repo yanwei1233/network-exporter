@@ -26,12 +26,13 @@ spec:
     spec:
       restartPolicy: Always
       nodeSelector:
-        k8s-network-probe-agent-gray: need
+        kubernetes.io/hostname: k16l09-h01-worker04
       containers:
         - name: k8s-network-probe-agent
-          image: registry.cn-beijing.aliyuncs.com/ning1875_haiwai_image/k8s-network-probe-agent:v1.0
+          image: xxx/k8s-network-probe-agent:v1.0
+          imagePullPolicy: Always
           args:
-#            - -server.addr=http://192.168.248.144:30090
+            #            - -server.addr=http://192.168.248.144:30090
             - -run.type=container
           resources:
             requests:
@@ -67,7 +68,7 @@ metadata:
   namespace: k8s-network-probe
 spec:
   ports:
-    - name: metrics
+    - name: http-metrics
       port: 8088
       targetPort: 8088
   selector:

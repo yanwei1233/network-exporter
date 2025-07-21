@@ -1,0 +1,8 @@
+version: '3.3'
+
+services:
+  wechat_webhook:
+    image: wechat_webhook_image:v1.0
+    ports:
+      - "5050:5050"
+    restart: always

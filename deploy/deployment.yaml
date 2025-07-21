@@ -20,10 +20,11 @@ spec:
         prometheus.io/port: '8087'
         prometheus.io/path: 'metrics'
     spec:
-      nodeName: k8s-master
+      nodeSelector:
+        kubernetes.io/hostname: k16l09-h01-worker04
       containers:
         - name: k8s-network-probe-server
-          image: registry.cn-beijing.aliyuncs.com/ning1875_haiwai_image/k8s-network-probe-server:v1.0
+          image: xxx/k8s-network-probe-server:v1.0
           imagePullPolicy: Always
           args:
             - -store.file.path=/opt/app/k8s-network-probe-server-store.json
@@ -36,12 +37,11 @@ spec:
             limits:
               cpu: 2
               memory: 2Gi
-
           volumeMounts:
             - name: tz-config
               mountPath: /etc/localtime
             - name: store-file
-              mountPath: /opt/app/k8s-network-probe-server-store.json
+              mountPath: /opt/app/
           securityContext:
             privileged: true
       volumes:
@@ -49,9 +49,21 @@ spec:
           hostPath:
             path: /etc/localtime
         - name: store-file
-          hostPath:
-            path: /opt/app/k8s-network-probe-server-store.json
-            type: FileOrCreate # 前面目录你得有
+          persistentVolumeClaim:
+            claimName: k8s-network-probe-server-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: k8s-network-probe-server-pvc
+  namespace: k8s-network-probe
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: longhorn
 ---
 apiVersion: v1
 kind: Service
