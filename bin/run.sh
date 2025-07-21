@@ -30,3 +30,7 @@ kubectl apply -f ${SCRIPT_DIR}/deploy/daemonset_gray.yaml
 
 #部署server
 kubectl apply -f ${SCRIPT_DIR}/deploy/deployment.yaml
+
+#部署alertmanager
+chmod +x ./alertmanager/run.sh
+./run.sh

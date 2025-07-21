@@ -29,4 +29,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+#打上自定义规则的标签
+kubectl patch prometheus k8s -n monitoring --type='json' -p='[{"op": "add", "path": "/spec/ruleSelector", "value": {"matchLabels": {"role": "alert-rules"}}}]'
+
 echo "alertmanager文件部署完成！"

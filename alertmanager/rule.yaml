@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: k8s
+    role: alert-rules
+  name: network-exporter-rule
+  namespace: monitoring
+spec:
+  groups:
+    - name: network-exporter-rule
+      rules:
+        - alert: NetworkProbeFailed
+          expr: |
+            network_probe_probe_result{err_reason!=""} == -1
+          for: 2m
+          labels:
+            severity: warning
+            team: network
+          annotations:
+            summary: "{{$labels.target}} 网络探测失败 (节点: {{$labels.probe_node}})"
+            description: |
+              {{$labels.target}} 的网络探测连续2分钟失败。
+              - 探测节点: {{$labels.probe_node}} ({{$labels.probe_ip}})
+              - 探测类型: {{$labels.run_type}}
+              - 失败原因: {{$labels.err_reason}}
+              - 探测方式: {{$labels.func}}
